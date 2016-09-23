@@ -1,0 +1,3 @@
+ding = {}
+module.exports = ding;
+
