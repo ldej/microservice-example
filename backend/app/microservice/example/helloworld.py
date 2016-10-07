@@ -1,5 +1,5 @@
 import asyncio
-from rpc import ServiceCollector, rpc
+from microservice import ServiceCollector, rpc
 
 
 class GreetingService:

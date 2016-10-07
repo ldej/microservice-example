@@ -1,8 +1,15 @@
 from collections import namedtuple
-
 from nats.aio.client import Client as NatsClient
 import json
 import inspect
+import logging
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.DEBUG)
+
+
+NATS_URL = 'nats://nats:4222'
 
 RpcService = namedtuple('RpcService', ['name', 'methods'])
 
@@ -32,7 +39,7 @@ class ServiceCollector:
         await self.start_nats()
 
         for service in self.services:
-            print("starting service: {}".format(service.name))
+            logger.debug("starting service: {}".format(service.name))
             for method_name, method in service.methods:
                 print("\t - {}".format(method_name))
                 rpc_name = "{service_name}.{method_name}".format(service_name=service.name, method_name=method_name)
@@ -41,13 +48,13 @@ class ServiceCollector:
     def nats_wrapper(self, fn):
         async def callback(msg):
             data = json.loads(msg.data.decode())
-            result = fn(**data)
+            result = fn(data)
             await self.nats_client.publish(msg.reply, json.dumps(result).encode())
         return callback
 
     async def start_nats(self):
         self.nats_client = NatsClient()
-        await self.nats_client.connect(io_loop=self.loop)
+        await self.nats_client.connect(io_loop=self.loop, servers=[NATS_URL])
 
     @classmethod
     def decorator(cls, method):
