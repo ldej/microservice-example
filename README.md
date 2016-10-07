@@ -12,12 +12,16 @@ TODO:
  - Add an easy service call test thing.
 
 To run:
+
 cd ./backend/
+
 docker-compose build
+
 docker-compose up
 
 To test:
 
 curl -X POST 'http://127.0.0.1:5000/thing_service.create_thing' -d '{"name": "Laurence"}'
+
 curl -X POST 'http://127.0.0.1:5000/thing_service.get_things'
 
