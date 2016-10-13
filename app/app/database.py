@@ -68,7 +68,3 @@ def session_scope():
         raise
     finally:
         session.close()
-
-
-if __name__ == '__main__':
-    create()

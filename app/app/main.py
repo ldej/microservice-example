@@ -5,6 +5,11 @@ from microservice.rpc import ServiceCollector
 from app.services.thing import ThingService
 from app.services.greeting import GreetingService
 from app import database
+import logging
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.DEBUG)
 
 
 if __name__ == "__main__":
@@ -18,5 +23,11 @@ if __name__ == "__main__":
     collector.add_service(ThingService())
 
     loop.run_until_complete(collector.run())
-    loop.run_forever()
-    loop.close()
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt as e:
+        logger.debug("Caught keyboard interrupt")
+    finally:
+        loop.stop()
+        loop.close()
+

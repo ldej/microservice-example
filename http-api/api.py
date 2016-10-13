@@ -7,6 +7,7 @@ from aiohttp import web
 from nats.aio.client import Client as NATS
 
 NATS_URL = 'nats://nats:4222'
+NATS_CALL_TIMEOUT = 60  # seconds
 
 
 logger = logging.getLogger(__name__)
@@ -30,21 +31,23 @@ async def call(request):
     rpc = request.match_info.get('rpc')
     logger.debug('Received http request: {}'.format(rpc))
 
-    msg = await con.timed_request(rpc, json.dumps(data).encode(), timeout=60)
+    msg = await con.timed_request(rpc, json.dumps(data).encode(), timeout=NATS_CALL_TIMEOUT)
 
     return web.json_response(json.loads(msg.data.decode()))
 
 
 class WebSocketHandler:
-    ws = None
-    con = None
+    def __init__(self, loop):
+        self.ws = None
+        self.con = None
+        self.loop = loop
 
     async def wshandler(self, request):
         self.ws = web.WebSocketResponse()
         await self.ws.prepare(request)
 
         self.con = NATS()
-        await self.con.connect(io_loop=loop, servers=[NATS_URL])
+        await self.con.connect(io_loop=self.loop, servers=[NATS_URL])
 
         await asyncio.gather(self.handle_ws(), self.handle_nats())
 
@@ -69,8 +72,10 @@ if __name__ == "__main__":
     loop = asyncio.get_event_loop()
 
     app = web.Application(loop=loop)
-    handler = WebSocketHandler()
-    app.router.add_get('/websocket', handler.wshandler)
+
+    websocket_handler = WebSocketHandler(loop=loop)
+    app.router.add_get('/websocket', websocket_handler.wshandler)
+
     app.router.add_post('/{rpc}', call)
 
     logger.debug("Http-api started")
