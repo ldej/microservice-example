@@ -15,7 +15,7 @@ class ThingService:
     name = 'thing_service'
 
     @rpc
-    def create_thing(self, data):
+    async def create_thing(self, data):
         with database.session_scope() as session:
             thing, errors = create_thing_schema.load(data, session=session)
 
@@ -26,7 +26,7 @@ class ThingService:
         return data
 
     @rpc
-    def get_things(self, data):
+    async def get_things(self, data):
         with database.session_scope() as session:
             things = session.query(Thing).all()
 

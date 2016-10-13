@@ -30,7 +30,7 @@ async def call(request):
     rpc = request.match_info.get('rpc')
     logger.debug('Received http request: {}'.format(rpc))
 
-    msg = await con.timed_request(rpc, json.dumps(data).encode())
+    msg = await con.timed_request(rpc, json.dumps(data).encode(), timeout=60)
 
     return web.json_response(json.loads(msg.data.decode()))
 

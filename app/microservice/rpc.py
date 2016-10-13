@@ -41,14 +41,14 @@ class ServiceCollector:
         for service in self.services:
             logger.debug("starting service: {}".format(service.name))
             for method_name, method in service.methods:
-                print("\t - {}".format(method_name))
+                logger.debug("\t - {}".format(method_name))
                 rpc_name = "{service_name}.{method_name}".format(service_name=service.name, method_name=method_name)
                 await self.nats_client.subscribe_async(rpc_name, queue=rpc_name, cb=self.nats_wrapper(method))
 
     def nats_wrapper(self, fn):
         async def callback(msg):
             data = json.loads(msg.data.decode())
-            result = fn(data)
+            result = await fn(data)
             await self.nats_client.publish(msg.reply, json.dumps(result).encode())
         return callback
 
