@@ -29,8 +29,7 @@ async def call(request):
         data = {}
 
     rpc = request.match_info.get('rpc')
-    logger.debug('Received http request: {}'.format(rpc))
-
+    logger.debug('=Received http request: {0} {1}'.format(rpc, data))
     msg = await con.timed_request(rpc, json.dumps(data).encode(), timeout=NATS_CALL_TIMEOUT)
 
     return web.json_response(json.loads(msg.data.decode()))
@@ -49,21 +48,32 @@ class WebSocketHandler:
         self.con = NATS()
         await self.con.connect(io_loop=self.loop, servers=[NATS_URL])
 
-        await asyncio.gather(self.handle_ws(), self.handle_nats())
+        await asyncio.gather(self.handle_ws())
 
         return self.ws
 
-    async def handle_nats(self):
-        async def process_message(message):
-            self.ws.send_json(json.loads(message.data.decode()))
+    async def process_message(self, message):
+        self.ws.send_json(json.loads(message.data.decode()))
 
-        await self.con.subscribe_async('natsresponse', cb=process_message)
+    async def subscribe(self, messages):
+        logger.debug("Websocket subscribed to: {}".format(messages))
+        for message in messages:
+            await self.con.subscribe_async(message, cb=self.process_message)
 
     async def handle_ws(self):
         while True:
             msg = await self.ws.receive()
             if msg.type == WSMsgType.TEXT:
-                await self.con.publish('natsrequest', json.dumps({'asd': 1}).encode())
+                message_data = json.loads(msg.data)
+                action = message_data.get('action')
+                if action == 'subscribe':
+                    await self.subscribe(message_data.get('rpcs', []))
+                elif action == 'publish':
+                    rpc = message_data.get('rpc')
+                    data = message_data.get('data')
+                    await self.con.publish(rpc, data.encode())
+                else:
+                    self.ws.send_json({'error': True, 'message': "Unknown action '{}'".format(action)})
 
 
 if __name__ == "__main__":

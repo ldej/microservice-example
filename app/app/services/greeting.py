@@ -1,7 +1,8 @@
 import asyncio
+import logging
+
 from microservice.rpc import rpc
 
-import logging
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
@@ -19,5 +20,4 @@ class GreetingService:
     async def hello_sleep(self, data):
         logger.debug('waiting for 10 seconds')
         await asyncio.sleep(10)
-        logger.debug('waited')
         return "Hello, {}".format(data.get('name'))

@@ -17,11 +17,11 @@ RpcService = namedtuple('RpcService', ['name', 'methods'])
 
 
 class ServiceCollector:
-    services = []
-    nats_client = None
 
     def __init__(self, loop):
+        self.services = []
         self.loop = loop
+        self.nats_client = None
 
     def add_service(self, instance):
         service_class = type(instance)
@@ -30,6 +30,7 @@ class ServiceCollector:
             raise Exception("Service {} does not have a property 'name'.".format(service_class))
 
         methods = inspect.getmembers(instance, predicate=inspect.ismethod)
+        instance.send_message = self.send_message
 
         def is_rpc(method_tuple):
             method_name, method = method_tuple
@@ -51,12 +52,16 @@ class ServiceCollector:
         async def callback(msg):
             data = json.loads(msg.data.decode())
             result = await fn(data)
-            await self.nats_client.publish(msg.reply, json.dumps(result).encode())
+            if msg.reply:
+                await self.nats_client.publish(msg.reply, json.dumps(result).encode())
         return callback
 
     async def start_nats(self):
         self.nats_client = NatsClient()
         await self.nats_client.connect(io_loop=self.loop, servers=[NATS_URL])
+
+    async def send_message(self, channel, data):
+        await self.nats_client.publish(channel, json.dumps(data).encode())
 
     @classmethod
     def decorator(cls, method):

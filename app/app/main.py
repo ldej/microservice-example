@@ -4,8 +4,10 @@ from microservice.rpc import ServiceCollector
 
 from app.services.thing import ThingService
 from app.services.greeting import GreetingService
+from app.services.websockettest import WebsocketTestService
 from app import database
 import logging
+
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
@@ -21,6 +23,7 @@ if __name__ == "__main__":
     # Add your services here
     collector.add_service(GreetingService())
     collector.add_service(ThingService())
+    collector.add_service(WebsocketTestService())
 
     loop.run_until_complete(collector.run())
     try:

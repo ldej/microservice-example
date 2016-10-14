@@ -1,0 +1,81 @@
+<!DOCTYPE HTML>
+<html>
+   <head>
+      <script type="text/javascript">
+         function WebSocketTest()
+         {
+            if ("WebSocket" in window)
+            {
+               // Let us open a web socket
+               window.ws = new WebSocket("ws://localhost:5000/websocket");
+
+               window.ws.onopen = function()
+               {
+                  // Web Socket is connected, send data using send()
+                  //window.ws.send(JSON.stringify({"action": "subscribe", "messages": ["websocket_test.websocket_test"]}));
+               };
+
+               window.ws.onmessage = function (evt)
+               {
+                  var received_msg = evt.data;
+                  console.log(received_msg)
+                  li = document.createElement('li');
+                  li.innerHTML = received_msg;
+
+                  ul = document.getElementsByTagName('ul')[0];
+                  ul.appendChild(li);
+               };
+
+               window.ws.onclose = function()
+               {
+                  // websocket is closed.
+                  alert("Connection is closed...");
+               };
+            }
+
+            else
+            {
+               // The browser doesn't support WebSocket
+               alert("WebSocket NOT supported by your Browser!");
+            }
+         }
+         function subscribe() {
+               rpc = document.getElementsByTagName('input')[0].value;
+               window.ws.send(JSON.stringify({"action": "subscribe", "rpcs": [rpc]}));
+         }
+         function publish() {
+               rpc = document.getElementsByTagName('input')[1].value;
+               data = document.getElementsByTagName('textarea')[0].value;
+
+               window.ws.send(JSON.stringify({"action": "publish", "rpc": rpc, "data": data}));
+         }
+         document.addEventListener("DOMContentLoaded", function(event) {
+            WebSocketTest()
+         });
+      </script>
+   </head>
+   <body>
+       <div>
+           <h4>Subscribe</h4>
+           <div>
+               <label>RPC</label>
+               <input type="text" value="websocket_test.websocket_test"/>
+           </div>
+            <button onclick="subscribe()">Send</button>
+       </div>
+       <div>
+           <h4>Publish</h4>
+           <div>
+               <label>RPC</label>
+               <input type="text" value="websocket_test.hello_websocket"/>
+           </div>
+           <div>
+               <label>Data</label>
+               <textarea>{"name": "Nobody"}</textarea>
+           </div>
+           <button onclick="publish()">Send</button>
+       </div>
+       <ul>
+       </ul>
+   </body>
+</html>

@@ -6,11 +6,12 @@ A nats, asyncio, aiohttp, sqlalchemy example for creating a microservice.
 
 ```bash
 git clone https://github.com/ldej/microservice-example
+cd ./microservice-example
 docker-compose build
 ```
 
 ## Basic usage
-
+Start the project
 ```bash
 docker-compose up
 ```
@@ -41,15 +42,15 @@ curl -X POST 'http://127.0.0.1:5000/greeting_service.hello' -d '{"name": "Awake 
 ```
 The second call should return before the first call.
 
-## TODO
- - Some way to show the websockets potential.
-     - Subscribe to a certain channel, with the websocket. A callback from another channel should post something back
-       in the websocket channel. So like somebody is posting information, and you get a message of that via
-       websocket.
-     - Make a simple websocket webpage with input fields for: the service you want to call, the data you want to
-       send. And a way to select which websocket channel you want to subscribe to. Maybe subscribe to more channels
-       over the same websocket?
+### Websockets
+Make sure the project is started. Open ```frontend/index.html```. In the subscribe section, the RPC input will be 
+filled with ```websocket_test.websocket_test```. When pressing send, the websocket will be subscribed to that 
+message on nats. There are two ways to confirm that it works. The first is to do:
+```bash
+curl -X POST 'http://127.0.0.1:5000/websocket_test.hello_websocket' -d '{"websockets": "are awesome"}'
+```
+This is a normal HTTP POST call. The call ```websocket_test.hello_websocket``` will send a message over nats on 
+channel ```websocket_test.websocket_test```. The browser will then show the message that was sent.
 
- - Add a way to send messages to other services.
- - Add a javascript way to use these schema's and invoke services.
- - Add an easy service call test thing.
+The second way to confirm is by using the publish section of the frontend. This will send the message to the backend 
+over the websocket (instead of HTTP POST). And it should give the same result in the frontend.
