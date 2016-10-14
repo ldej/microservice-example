@@ -4,6 +4,12 @@
       <script type="text/javascript">
          function WebSocketTest()
          {
+            counter = 0;
+
+            HELLO = 1;
+            SUBSCRIBE = 32;
+            PUBLISH = 16;
+
             if ("WebSocket" in window)
             {
                // Let us open a web socket
@@ -12,7 +18,7 @@
                window.ws.onopen = function()
                {
                   // Web Socket is connected, send data using send()
-                  //window.ws.send(JSON.stringify({"action": "subscribe", "messages": ["websocket_test.websocket_test"]}));
+                  window.ws.send(JSON.stringify([HELLO, "realm", {}]));
                };
 
                window.ws.onmessage = function (evt)
@@ -41,13 +47,15 @@
          }
          function subscribe() {
                rpc = document.getElementsByTagName('input')[0].value;
-               window.ws.send(JSON.stringify({"action": "subscribe", "rpcs": [rpc]}));
+               window.ws.send(JSON.stringify([SUBSCRIBE, counter, {}, rpc]));
+               counter++;
          }
          function publish() {
                rpc = document.getElementsByTagName('input')[1].value;
                data = document.getElementsByTagName('textarea')[0].value;
 
-               window.ws.send(JSON.stringify({"action": "publish", "rpc": rpc, "data": data}));
+               window.ws.send(JSON.stringify([PUBLISH, counter, {}, rpc, data]));
+               counter++;
          }
          document.addEventListener("DOMContentLoaded", function(event) {
             WebSocketTest()

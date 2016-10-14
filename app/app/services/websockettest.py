@@ -10,10 +10,6 @@ class WebsocketTestService:
     name = 'websocket_test'
 
     @rpc
-    async def websocket_test(self, data):
-        logger.debug('Received websocket_test.websocket_test call')
-        return {'yay': 'yay'}
-
-    @rpc
     async def hello_websocket(self, data):
         await self.send_message('websocket_test.websocket_test', data)
+        return "Look at your browser"
