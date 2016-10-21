@@ -37,7 +37,7 @@ class WebSocketHandler:
 
     async def subscribe(self, topic):
         logger.debug("Websocket subscribed to: {}".format(topic))
-        await self.con.subscribe_async(topic, cb=self.subscribe_callback)
+        return await self.con.subscribe_async(topic, cb=self.subscribe_callback)
 
     async def subscribe_callback(self, message):
         details = message.data.get('details', {})
