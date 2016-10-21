@@ -1,6 +1,7 @@
 # Microservice example
 
-A nats, asyncio, aiohttp, sqlalchemy example for creating a microservice.
+A nats, asyncio, aiohttp, sqlalchemy example for creating a microservice. Support for websockets using 
+[WAMP](https://github.com/wamp-proto/wamp-proto) is included.
 
 ## Installation
 
@@ -55,26 +56,38 @@ channel ```websocket_test.websocket_test```. The browser will then show the mess
 The second way to confirm is by using the publish section of the frontend. This will send the message to the backend 
 over the websocket (instead of HTTP POST). And it should give the same result in the frontend as the HTTP POST call.
 
-# Todo
+# Development
 
-## Websocket WAMP
+## Watchdog
+When running ```docker-compose up```, the ```docker-compose.yml``` file is used. This file changes the 
+```http-api``` and ```app``` services so they will mount the local code, and reload automatically when
+any of the ```.py``` files in the folders are updated.
+
+## Todo
+ - Packaging
+
+### Websocket WAMP
  - 'wamp.2.msgpck'
  - session ids
  - publication ids
  - javascript example
  - optional args/kwargs handling (remove arguments when empty)
 
-## Microservice rpc
+### Microservice rpc
  - Args and kwargs unpacking
  - returning args and kwargs
  - publication ids
+ - apispec/swagger
  - [Queues](https://nats.io/documentation/concepts/nats-queueing/)
  - [Schemas](https://marshmallow.readthedocs.io/en/latest/) for rpcs
  - Authentication
+ - Migrations
 
-## Code generation
+### Code generation
  - Use OLE to generate SqlAlchemy models, Schemas, javascript models
 
-## Docker
- - Different docker files for dev and deployment (entrypoint / volumes)
+### Docker
  - nginx/caddy/letsencrypt
+
+### High availability
+An example with multiple http-apis, a cluster of nats servers and a bunch of app instances.

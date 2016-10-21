@@ -1,2 +1,5 @@
 aiohttp==1.0.3
 asyncio-nats-client==0.3.2
+
+# For development watchmedo command
+watchdog

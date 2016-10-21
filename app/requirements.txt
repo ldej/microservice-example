@@ -2,8 +2,8 @@ asyncio-nats-client
 sqlalchemy
 sqlalchemy-utils
 psycopg2
-apispec
 marshmallow
 marshmallow-sqlalchemy
-flask
+
+# For development
 watchdog
