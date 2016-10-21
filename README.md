@@ -53,4 +53,28 @@ This is a normal HTTP POST call. The call ```websocket_test.hello_websocket``` w
 channel ```websocket_test.websocket_test```. The browser will then show the message that was sent.
 
 The second way to confirm is by using the publish section of the frontend. This will send the message to the backend 
-over the websocket (instead of HTTP POST). And it should give the same result in the frontend.
+over the websocket (instead of HTTP POST). And it should give the same result in the frontend as the HTTP POST call.
+
+# Todo
+
+## Websocket WAMP
+ - 'wamp.2.msgpck'
+ - session ids
+ - publication ids
+ - javascript example
+ - optional args/kwargs handling (remove arguments when empty)
+
+## Microservice rpc
+ - Args and kwargs unpacking
+ - returning args and kwargs
+ - publication ids
+ - [Queues](https://nats.io/documentation/concepts/nats-queueing/)
+ - [Schemas](https://marshmallow.readthedocs.io/en/latest/) for rpcs
+ - Authentication
+
+## Code generation
+ - Use OLE to generate SqlAlchemy models, Schemas, javascript models
+
+## Docker
+ - Different docker files for dev and deployment (entrypoint / volumes)
+ - nginx/caddy/letsencrypt

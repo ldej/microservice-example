@@ -9,6 +9,7 @@ services:
       - ./http-api/:/code
     depends_on:
       - nats
+      - app
     links:
       - nats:nats
 

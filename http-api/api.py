@@ -1,20 +1,44 @@
 import logging
 import json
 import asyncio
+import datetime
 
 from aiohttp import WSMsgType, HttpBadRequest
 from aiohttp import web
+import aiohttp
 from nats.aio.client import Client as NATS
 
 from websocket_handler import WebSocketHandler
 
 NATS_URL = 'nats://nats:4222'
+NATS_SERVICE_URL = 'nats://nats:8222/connz?subs=1'
 NATS_CALL_TIMEOUT = 60  # seconds
 
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.DEBUG)
+
+subscriptions = []
+last_requested = datetime.datetime.now() - datetime.timedelta(minutes=1)
+
+
+async def in_active_subscriptions(rpc):
+    global subscriptions
+    global last_requested
+
+    if last_requested < datetime.datetime.now() - datetime.timedelta(minutes=1):
+        subscriptions = await get_subscriptions()
+        last_requested = datetime.datetime.now()
+
+    return rpc in subscriptions
+
+
+async def get_subscriptions():
+    async with aiohttp.ClientSession() as session:
+        async with session.get(NATS_SERVICE_URL) as response:
+            result = await response.json()
+            return {sub for connection in result.get('connections') for sub in connection.get('subscriptions_list', [])}
 
 
 async def call(request):
@@ -38,6 +62,11 @@ async def call(request):
         data = {}
 
     rpc = request.match_info.get('rpc')
+
+    if not await in_active_subscriptions(rpc):
+        logger.debug('Unknown RPC: {}'.format(rpc))
+        raise HttpBadRequest("Unknown RPC: '{0}'. Available rpcs: {1}".format(rpc, subscriptions))
+
     logger.debug('=Received http request: {0} {1}'.format(rpc, data))
     msg = await con.timed_request(rpc, json.dumps(data).encode(), timeout=NATS_CALL_TIMEOUT)
 

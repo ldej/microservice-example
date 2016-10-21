@@ -37,8 +37,13 @@ class WebSocketHandler:
 
     async def subscribe(self, topic):
         logger.debug("Websocket subscribed to: {}".format(topic))
-        # TODO This should send an MessageType.EVENT when done.
-        await self.con.subscribe_async(topic, cb=self.process_message)
+        await self.con.subscribe_async(topic, cb=self.subscribe_callback)
+
+    async def subscribe_callback(self, message):
+        details = message.data.get('details', {})
+        args = message.data.get('args', [])
+        kwargs = message.data.get('kwargs', {})
+        await self.reply([MessageType.EVENT, message.subject, 1, details, args, kwargs])
 
     async def unsubscribe(self, subscription_id):
         await self.con.unsubscribe(subscription_id)
@@ -60,12 +65,12 @@ class WebSocketHandler:
         return await self.con.timed_request(procedure, json.dumps(data).encode(), timeout=NATS_CALL_TIMEOUT)
 
     async def process_message(self, message):
+        logger.debug('Received message: {}'.format(message))
         try:
             message_type, *payload = message
         except TypeError:
             await self.reply([MessageType.ERROR, {'message': 'Unable to read message.'}])
             return
-        logger.debug('Received message: {}'.format(message))
 
         if message_type == MessageType.HELLO:
             realm, details = payload
