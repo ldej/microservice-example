@@ -1,5 +1,5 @@
 import asyncio
-from microservice import ServiceCollector, rpc
+from microservice import ServiceManager, rpc
 
 
 class GreetingService:
@@ -17,10 +17,10 @@ class GreetingService:
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
 
-    collector = ServiceCollector(loop=loop)
-    collector.add_service(GreetingService())
+    manager = ServiceManager(loop=loop)
+    manager.add_service(GreetingService())
 
-    loop.run_until_complete(collector.run())
+    loop.run_until_complete(manager.run())
     loop.run_forever()
     loop.close()
 

@@ -40,10 +40,9 @@ class WebSocketHandler:
         return await self.con.subscribe_async(topic, cb=self.subscribe_callback)
 
     async def subscribe_callback(self, message):
-        details = message.data.get('details', {})
-        args = message.data.get('args', [])
-        kwargs = message.data.get('kwargs', {})
-        await self.reply([MessageType.EVENT, message.subject, 1, details, args, kwargs])
+        results = json.loads(message.data.decode())
+        logger.debug(results)
+        await self.reply([MessageType.EVENT, message.subject, 1, *results])
 
     async def unsubscribe(self, subscription_id):
         await self.con.unsubscribe(subscription_id)
@@ -59,6 +58,7 @@ class WebSocketHandler:
                 await self.process_message(message)
 
     async def reply(self, message):
+        logger.debug(message)
         self.ws.send_json(message)
 
     async def call(self, procedure, data):
@@ -91,14 +91,7 @@ class WebSocketHandler:
 
         elif message_type == MessageType.PUBLISH:
             request_id, options, topic, *rest = payload
-            if len(rest) == 1:
-                args, kwargs = [*rest, None]
-            elif len(rest) == 2:
-                args, kwargs = rest
-            else:
-                return
-                # Error
-            await self.publish(topic, [args, kwargs])
+            await self.publish(topic, [*rest])
             await self.reply([MessageType.PUBLISHED, request_id, 1])
 
         elif message_type == MessageType.SUBSCRIBE:
@@ -112,8 +105,8 @@ class WebSocketHandler:
             await self.reply([MessageType.UNSUBSCRIBED, request_id])
 
         elif message_type == MessageType.CALL:
-            request_id, options, procedure, args, kwargs = payload
-            result = await self.call(procedure, [args, kwargs])
+            request_id, options, procedure, *rest = payload
+            result = await self.call(procedure, [*rest])
             await self.reply([MessageType.RESULT, request_id, {}, result])
 
         else:  # Not implemented

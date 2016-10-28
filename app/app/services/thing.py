@@ -15,20 +15,21 @@ class ThingService:
     name = 'thing_service'
 
     @rpc
-    async def create_thing(self, data):
+    async def create_thing(self, *args, **kwargs) -> ([], {}):
         with database.session_scope() as session:
-            thing, errors = create_thing_schema.load(data, session=session)
+            thing, errors = create_thing_schema.load(kwargs, session=session)
+            logger.debug(errors)
 
             session.add(thing)
             session.flush()
 
             data, errors = thing_schema.dump(thing)
-        return data
+        return [], data
 
     @rpc
-    async def get_things(self, data):
+    async def get_things(self) -> ([], {}):
         with database.session_scope() as session:
             things = session.query(Thing).all()
 
             things = [thing_schema.dump(thing).data for thing in things]
-        return things
+        return things, {}

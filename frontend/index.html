@@ -52,9 +52,19 @@
          }
          function publish() {
                rpc = document.getElementsByTagName('input')[1].value;
-               data = document.getElementsByTagName('textarea')[0].value;
+               args_value = document.getElementsByTagName('textarea')[0].value;
+               kwargs_value = document.getElementsByTagName('textarea')[1].value;
 
-               window.ws.send(JSON.stringify([PUBLISH, counter, {}, rpc, data]));
+               if (args_value)
+                    args = JSON.parse(args_value);
+               else
+                    args = [];
+               if (kwargs_value)
+                    kwargs = JSON.parse(kwargs_value);
+               else
+                    kwargs = {};
+
+               window.ws.send(JSON.stringify([PUBLISH, counter, {}, rpc, args, kwargs]));
                counter++;
          }
          document.addEventListener("DOMContentLoaded", function(event) {
@@ -75,11 +85,15 @@
            <h4>Publish</h4>
            <div>
                <label>RPC</label>
-               <input type="text" value="websocket_test.hello_websocket"/>
+               <div><input type="text" value="websocket_test.hello_websocket"/></div>
            </div>
            <div>
-               <label>Data</label>
-               <textarea>{"name": "Nobody"}</textarea>
+               <label>Arguments</label>
+               <div><textarea>["somebody"]</textarea></div>
+           </div>
+           <div>
+               <label>Keyword Arguments</label>
+               <div><textarea>{"name": "Nobody"}</textarea></div>
            </div>
            <button onclick="publish()">Send</button>
        </div>

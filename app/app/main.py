@@ -1,6 +1,6 @@
 import asyncio
 
-from microservice.rpc import ServiceCollector
+from microservice.rpc import ServiceManager
 
 from app.services.thing import ThingService
 from app.services.greeting import GreetingService
@@ -18,14 +18,14 @@ if __name__ == "__main__":
     database.create()
 
     loop = asyncio.get_event_loop()
-    collector = ServiceCollector(loop=loop)
+    manager = ServiceManager(loop=loop)
 
     # Add your services here
-    collector.add_service(GreetingService())
-    collector.add_service(ThingService())
-    collector.add_service(WebsocketTestService())
+    manager.add_service(GreetingService())
+    manager.add_service(ThingService())
+    manager.add_service(WebsocketTestService())
 
-    loop.run_until_complete(collector.run())
+    loop.run_until_complete(manager.run())
     try:
         loop.run_forever()
     except KeyboardInterrupt as e:

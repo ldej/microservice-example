@@ -59,7 +59,7 @@ async def call(request):
         except json.decoder.JSONDecodeError as e:
             raise HttpBadRequest(e)
     else:
-        data = {}
+        data = []
 
     rpc = request.match_info.get('rpc')
 
